@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Hurry Up",
+  "version": "1.0.0",
+  "description": "实时查看当前时间、下班倒计时与节日进度。",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_title": "Hurry Up",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    },
+    "default_popup": "popup.html"
+  }
+}

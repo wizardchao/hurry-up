@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hurry Up</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="app">
+      <div class="ambient ambient-a"></div>
+      <div class="ambient ambient-b"></div>
+      <section class="hero">
+        <p class="hero-tag">Hurry Up</p>
+        <div class="hero-top">
+          <h1 class="hero-time" id="current-time">--:--:--</h1>
+          <span class="hero-status" id="current-status">--</span>
+        </div>
+        <div class="hero-meta">
+          <span class="hero-meta-item" id="current-date">----年--月--日 星期-</span>
+          <span class="hero-meta-item" id="lunar-date">农历 --</span>
+          <span class="hero-meta-item" id="solar-term">节气 --</span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <ul class="metric-list" id="metric-list"></ul>
+      </section>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

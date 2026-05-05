@@ -1,0 +1,9 @@
+{
+  "name": "hurry-up",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chrome extension build scripts for Hurry Up.",
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  }
+}

@@ -416,15 +416,15 @@ function buildStaticMetrics(now) {
       value: `距离月末还剩 ${getDaysUntilMonthEnd(now)} 天`,
       tone: "default"
     },
+    withMetricKey("dragon-boat", getFestivalMessage(now, "端午节", dragonBoatFestival)),
+    withMetricKey("mid-autumn", getFestivalMessage(now, "中秋节", midAutumnFestival)),
+    withMetricKey("national-day", getFestivalMessage(now, "国庆节", nationalDay)),
     {
       key: "year-end",
       label: "年末进度",
       value: `距离年末还剩 ${getDaysUntilYearEnd(now)} 天`,
       tone: "default"
-    },
-    withMetricKey("dragon-boat", getFestivalMessage(now, "端午节", dragonBoatFestival)),
-    withMetricKey("mid-autumn", getFestivalMessage(now, "中秋节", midAutumnFestival)),
-    withMetricKey("national-day", getFestivalMessage(now, "国庆节", nationalDay))
+    }
   ];
 
   return metrics.filter(Boolean);

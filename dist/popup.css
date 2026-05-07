@@ -204,6 +204,10 @@ body {
   margin-top: 8px;
 }
 
+.hero-meta-item[hidden] {
+  display: none;
+}
+
 .hero-meta-item {
   display: inline-flex;
   align-items: center;
@@ -233,6 +237,7 @@ body {
 }
 
 .metric-item {
+  --metric-progress: 0%;
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -241,6 +246,7 @@ body {
   padding: 9px 11px;
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 13px;
+  overflow: hidden;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.08)),
     rgba(255, 255, 255, 0.1);
@@ -249,19 +255,36 @@ body {
   -webkit-backdrop-filter: blur(22px) saturate(160%);
 }
 
-.metric-item::before {
+.metric-item::before,
+.metric-item::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), transparent 60%);
   pointer-events: none;
+}
+
+.metric-item::before {
+  z-index: 1;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), transparent 60%);
+}
+
+.metric-item::after {
+  z-index: 0;
+  right: auto;
+  width: var(--metric-progress);
+  border-radius: 13px 5px 5px 13px;
+  background:
+    linear-gradient(90deg, rgba(111, 160, 190, 0.34), rgba(217, 105, 65, 0.2)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04));
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.55);
+  transition: width 360ms ease;
 }
 
 .metric-label,
 .metric-value {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .metric-body {
@@ -284,7 +307,7 @@ body {
 
 .metric-icon {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: inline-grid;
   place-items: center;
   flex: none;
@@ -322,8 +345,20 @@ body {
     var(--panel);
 }
 
+.metric-item.is-accent::after {
+  background:
+    linear-gradient(90deg, rgba(217, 105, 65, 0.36), rgba(244, 184, 91, 0.24)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.04));
+}
+
 .metric-item.is-accent .metric-value {
   color: var(--accent);
+}
+
+.metric-item.is-muted::after {
+  background:
+    linear-gradient(90deg, rgba(124, 138, 151, 0.28), rgba(124, 138, 151, 0.12)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.04));
 }
 
 .metric-item.is-muted .metric-value {

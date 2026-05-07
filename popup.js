@@ -157,6 +157,23 @@ function getCalendarDayDiff(fromDate, toDate) {
   return Math.round((startOfDay(toDate) - startOfDay(fromDate)) / oneDay);
 }
 
+function clampProgress(value) {
+  return Math.max(0, Math.min(1, value));
+}
+
+function getTimeProgress(now, start, end) {
+  const totalMs = end.getTime() - start.getTime();
+  if (totalMs <= 0) {
+    return 1;
+  }
+
+  return clampProgress((now.getTime() - start.getTime()) / totalMs);
+}
+
+function getDayProgress(now, start, end) {
+  return getTimeProgress(startOfDay(now), startOfDay(start), startOfDay(end));
+}
+
 function getDaysUntilWeekend(now) {
   const day = now.getDay();
   if (day === 0 || day === 6) {
@@ -187,7 +204,7 @@ function getDaysUntilYearEnd(now) {
 
 function getDaysUntilCrazyThursday(now) {
   const day = now.getDay();
-  if (day === 0 || day === 5 || day === 6) {
+  if (day === 0 || day >= 5) {
     return null;
   }
 
@@ -277,12 +294,21 @@ function getOffWorkMessage(now) {
     30,
     0
   );
+  const workStart = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    9,
+    0,
+    0
+  );
   const diffMs = offWork.getTime() - now.getTime();
 
   if (diffMs < 0) {
     return {
-      text: "已过下班时间",
-      tone: "muted"
+      text: "已下班，好好休息吧～",
+      tone: "muted",
+      progress: 1
     };
   }
 
@@ -293,7 +319,8 @@ function getOffWorkMessage(now) {
 
   return {
     text: `距离 18:30 还剩 ${hours} 小时 ${minutes} 分钟 ${seconds} 秒`,
-    tone: "accent"
+    tone: "accent",
+    progress: getTimeProgress(now, workStart, offWork)
   };
 }
 
@@ -304,6 +331,14 @@ function getLunchMessage(now) {
     now.getDate(),
     11,
     50,
+    0
+  );
+  const lunchStart = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    9,
+    0,
     0
   );
   const diffMs = lunch.getTime() - now.getTime();
@@ -319,7 +354,8 @@ function getLunchMessage(now) {
 
   return {
     text: `距离吃中饭还剩 ${hours} 小时 ${minutes} 分钟 ${seconds} 秒`,
-    tone: "accent"
+    tone: "accent",
+    progress: getTimeProgress(now, lunchStart, lunch)
   };
 }
 
@@ -358,7 +394,8 @@ function getFestivalMessage(now, label, festivalDate) {
   return {
     label,
     value: `距离${label}开始还剩 ${remainingDays} 天`,
-    tone: remainingDays <= 3 ? "accent" : "default"
+    tone: remainingDays <= 3 ? "accent" : "default",
+    progress: getDayProgress(now, new Date(now.getFullYear(), 0, 1), festivalDate)
   };
 }
 
@@ -368,10 +405,16 @@ function getCrazyThursdayMetric(now) {
     return null;
   }
 
+  const monday = startOfDay(now);
+  monday.setDate(monday.getDate() - (now.getDay() - 1));
+  const thursday = new Date(monday);
+  thursday.setDate(monday.getDate() + 3);
+
   return {
     label: "疯狂星期四",
-    value: `距离疯狂星期四还剩 ${remainingDays} 天`,
-    tone: remainingDays <= 1 ? "accent" : "default"
+    value: now.getDay() >= 3 ? "V我50，冲冲冲！" : `距离疯狂星期四还剩 ${remainingDays} 天`,
+    tone: remainingDays <= 1 ? "accent" : "default",
+    progress: getDayProgress(now, monday, thursday)
   };
 }
 
@@ -383,6 +426,15 @@ function buildStaticMetrics(now) {
   const crazyThursday = getCrazyThursdayMetric(now);
   const weekendDays = getDaysUntilWeekend(now);
   const monthHalfDays = getDaysUntilMonthHalf(now);
+  const weekStart = startOfDay(now);
+  weekStart.setDate(weekStart.getDate() - Math.max(0, now.getDay() - 1));
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 5);
+  const monthStart = new Date(currentYear, now.getMonth(), 1);
+  const monthHalf = new Date(currentYear, now.getMonth(), 15);
+  const monthEnd = new Date(currentYear, now.getMonth() + 1, 0);
+  const yearStart = new Date(currentYear, 0, 1);
+  const yearEnd = new Date(currentYear, 11, 31);
 
   const metrics = [
     withMetricKey("crazy-thursday", crazyThursday),
@@ -390,19 +442,22 @@ function buildStaticMetrics(now) {
       key: "weekend",
       label: "周末进度",
       value: weekendDays === null ? "已放假" : `距离周末开始还剩 ${weekendDays} 天`,
-      tone: weekendDays === null || weekendDays <= 1 ? "accent" : "default"
+      tone: weekendDays === null || weekendDays <= 1 ? "accent" : "default",
+      progress: weekendDays === null ? 1 : getDayProgress(now, weekStart, weekEnd)
     },
     {
       key: "month-half",
-      label: "月中进度",
-      value: monthHalfDays === null ? "月已过半" : `距离 15 号还剩 ${monthHalfDays} 天`,
-      tone: monthHalfDays === null ? "muted" : "default"
+      label: "发薪进度",
+      value: monthHalfDays === null ? "发薪日已过" : `距离发薪日还剩 ${monthHalfDays} 天`,
+      tone: monthHalfDays === null ? "muted" : "default",
+      progress: monthHalfDays === null ? 1 : getDayProgress(now, monthStart, monthHalf)
     },
     {
       key: "month-end",
       label: "月末进度",
       value: `距离月末还剩 ${getDaysUntilMonthEnd(now)} 天`,
-      tone: "default"
+      tone: "default",
+      progress: getDayProgress(now, monthStart, monthEnd)
     },
     withMetricKey("dragon-boat", getFestivalMessage(now, "端午节", dragonBoatFestival)),
     withMetricKey("mid-autumn", getFestivalMessage(now, "中秋节", midAutumnFestival)),
@@ -411,7 +466,8 @@ function buildStaticMetrics(now) {
       key: "year-end",
       label: "年末进度",
       value: `距离年末还剩 ${getDaysUntilYearEnd(now)} 天`,
-      tone: "default"
+      tone: "default",
+      progress: getDayProgress(now, yearStart, yearEnd)
     }
   ];
 
@@ -452,6 +508,9 @@ function upsertMetric(metric, index) {
 
   item.classList.toggle("is-accent", metric.tone === "accent");
   item.classList.toggle("is-muted", metric.tone === "muted");
+  const progress = clampProgress(metric.progress ?? 0);
+  item.style.setProperty("--metric-progress", `${Math.round(progress * 100)}%`);
+  item.dataset.progress = String(Math.round(progress * 100));
   item.setAttribute("aria-label", `${metric.label}：${metric.value}`);
   item.children[0].children[0].textContent = metric.value;
   item.children[1].className = `metric-icon is-${metric.key}`;
@@ -499,7 +558,8 @@ function updateDynamicMetrics(now) {
         key: "lunch",
         label: "午饭进度",
         value: lunch.text,
-        tone: lunch.tone
+        tone: lunch.tone,
+        progress: lunch.progress
       },
       dynamicCount
     );
@@ -514,7 +574,8 @@ function updateDynamicMetrics(now) {
       key: "off-work",
       label: "下班进度",
       value: offWork.text,
-      tone: offWork.tone
+      tone: offWork.tone,
+      progress: offWork.progress
     },
     dynamicCount
   );

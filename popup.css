@@ -285,11 +285,34 @@ body {
 .metric-icon {
   position: relative;
   z-index: 1;
+  display: inline-grid;
+  place-items: center;
   flex: none;
   color: var(--text-main);
   font-size: 16px;
   line-height: 1;
   opacity: 0.92;
+}
+
+.metric-icon.is-dragon-boat,
+.metric-icon.is-national-day {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  color: #fff7d6;
+  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  text-shadow: 0 1px 2px rgba(97, 31, 16, 0.28);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), 0 6px 12px rgba(180, 47, 35, 0.18);
+}
+
+.metric-icon.is-dragon-boat {
+  background: linear-gradient(135deg, #2f8f5b, #d64835 58%, #f2b94b);
+}
+
+.metric-icon.is-national-day {
+  background: linear-gradient(135deg, #d71920, #e84d2f 58%, #f5c44f);
 }
 
 .metric-item.is-accent {

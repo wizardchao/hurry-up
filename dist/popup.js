@@ -36,9 +36,9 @@ const METRIC_ICONS = {
   "month-half": "💵",
   "month-end": "📆",
   "year-end": "🎯",
-  "dragon-boat": "🍙",
+  "dragon-boat": "粽",
   "mid-autumn": "🌕",
-  "national-day": "🇨🇳"
+  "national-day": "国"
 };
 const CHINESE_LUNAR_DAYS = [
   "初一",
@@ -258,26 +258,14 @@ function getSolarTermDate(year, termIndex) {
   return new Date(year, month, getSolarTermDay(year, termIndex));
 }
 
-function getCurrentSolarTerm(now) {
-  const years = [now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1];
-  const events = years
-    .flatMap((year) =>
-      SOLAR_TERM_NAMES.map((name, index) => ({
-        name,
-        date: getSolarTermDate(year, index)
-      }))
-    )
-    .sort((left, right) => left.date - right.date);
+function getTodaySolarTerm(now) {
+  const todayKey = toDateKey(now);
+  const term = SOLAR_TERM_NAMES.find((name, index) => {
+    const termDate = getSolarTermDate(now.getFullYear(), index);
+    return toDateKey(termDate) === todayKey;
+  });
 
-  let current = events[0];
-  for (const event of events) {
-    if (event.date > now) {
-      break;
-    }
-    current = event;
-  }
-
-  return current?.name ?? "--";
+  return term ?? null;
 }
 
 function getOffWorkMessage(now) {
@@ -450,9 +438,6 @@ function upsertMetric(metric, index) {
     const body = document.createElement("div");
     body.className = "metric-body";
 
-    const label = document.createElement("span");
-    label.className = "metric-label";
-
     const value = document.createElement("span");
     value.className = "metric-value";
 
@@ -460,15 +445,16 @@ function upsertMetric(metric, index) {
     icon.className = "metric-icon";
     icon.setAttribute("aria-hidden", "true");
 
-    body.append(label, value);
+    body.append(value);
     item.append(body, icon);
     metricElements.set(metric.key, item);
   }
 
   item.classList.toggle("is-accent", metric.tone === "accent");
   item.classList.toggle("is-muted", metric.tone === "muted");
-  item.children[0].children[0].textContent = metric.label;
-  item.children[0].children[1].textContent = metric.value;
+  item.setAttribute("aria-label", `${metric.label}：${metric.value}`);
+  item.children[0].children[0].textContent = metric.value;
+  item.children[1].className = `metric-icon is-${metric.key}`;
   item.children[1].textContent = METRIC_ICONS[metric.key] ?? "•";
 
   const currentItem = metricListElement.children[index];
@@ -547,7 +533,9 @@ function updateHeaderMeta(now) {
   currentStatusElement.textContent = holidayStatus.text;
   currentStatusElement.className = `hero-status is-${holidayStatus.tone}`;
   lunarDateElement.textContent = getLunarDateText(now);
-  solarTermElement.textContent = `节气 ${getCurrentSolarTerm(now)}`;
+  const solarTerm = getTodaySolarTerm(now);
+  solarTermElement.hidden = !solarTerm;
+  solarTermElement.textContent = solarTerm ? `节气 ${solarTerm}` : "";
 }
 
 function refreshStaticMetricsIfNeeded(now, dynamicCount) {
